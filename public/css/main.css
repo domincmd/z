@@ -1,0 +1,144 @@
+* {
+    padding: 0;
+    margin: 0;
+    font-family: 'JetBrains Mono';
+}
+
+:root {
+    --background: #0B090A;
+    --background-highlight: #161A1D;
+    --background-accent: #878787;
+    --dark-red: #660708;
+    --red: #BA181B;
+    --light-red: #E5383B;
+    --text: #fff;
+}
+
+body {
+    background: var(--background);
+    color: var(--text);
+}
+
+.main-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.left-container {
+    width: 15%;
+    height: 100vh;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 15px;
+}
+
+.profile-container {
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.profile-container > img {
+    width: 32px;
+}
+
+.profile-container > span {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0px 20px;
+}
+
+.pfp {
+    box-sizing: border-box;
+    padding: 10px;
+    border: 1px solid var(--text);
+    border-radius: 50%;
+    aspect-ratio: 1/1;
+    max-width: 45px;
+    text-align: center;
+}
+
+.sections-list {
+    width: 90%;
+    margin-top: 20px;
+}
+
+.section {
+    margin: 10px 0px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: 0.3s ease;
+    padding: 5px 10px;
+    border-radius: 25vmin;
+}
+
+.section:hover {
+    background: var(--background-highlight);
+}
+
+.middle-container {
+    width: 30%;
+    height: 100vh;
+    border-left: 1px solid var(--background-accent);
+    border-right: 1px solid var(--background-accent);
+}
+
+.post-container {
+    border-bottom: 1px solid var(--background-accent);
+    display: flex;
+    justify-content: space-between;
+    box-sizing: border-box;
+    padding: 20px 0px;
+}
+
+.post-container > form {
+    flex: 1;
+}
+
+.post-input {
+    border: none;
+    background-color: transparent;
+    outline: none;
+    width: calc(100% - 20px);
+    caret-color: white;
+    font-size: 1.2rem;
+    color: var(--text);
+    resize: none;
+    margin-bottom: 15px;
+    border-bottom: var(--background-accent) 1px solid;
+}
+
+.post-input::placeholder {
+    color: var(--background-accent);
+}
+
+.post-pfp {
+    margin: 0px 20px;
+}
+
+.post-btn {
+    padding: 5px 10px;
+    border-radius: 25vmin;
+    background-color: var(--light-red);
+    color: var(--text);
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    bottom: 10px;
+    right: 10px;
+    margin-right: 20px;
+}
+
+.outer-pfp {
+    height: 100%;
+}
+
+.outer-post {
+    width: 100%;
+    display: flex;
+    justify-content: right;
+}

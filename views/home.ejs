@@ -4,21 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>home</title>
+    <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-    <%= user.username %>
-    <form action="/post" method="POST">
-        <input type="text" name="tweet">
-        <button type="submit">post</button>
-    </form>
-
-    <% your_posts.forEach(post => { %>
-        <div class="post">
-            <strong><%= post.user %></strong>
-            <%= post.content %>
-            <%= post.likes %>
-            <%= post.reposts %>
+    <div class="main-container">
+        <div class="left-container">
+            <div class="profile-container">
+                <div class="pfp">
+                    <%= pfp %>
+                </div>
+                <span><%= user.username %></span>
+                <img src="/images/exit.svg" alt="">
+            </div>
+            <div class="sections-list">
+                <div class="section">
+                    <span>home</span>
+                </div>
+                <div class="section">
+                    <span>profile</span>
+                </div>
+                <div class="section">
+                    <span>credits</span>
+                </div>
+            </div>
         </div>
-    <% }) %>
+        <div class="middle-container">
+            <div class="post-container">
+                <div class="outer-pfp">
+                    <div class="pfp post-pfp">
+                        <%= pfp %>
+                    </div>
+                </div>
+                <form action="/post" method="POST">
+                    <textarea type="text" name="tweet" class="post-input" placeholder="say something..."></textarea>
+                    <div class="outer-post">
+                        <button type="submit" class="post-btn">post</button>
+                    </div>
+                </form>
+            </div>
+
+            <% your_posts.forEach(post => { %>
+                <div class="post">
+                    <strong><%= post.user %></strong>
+                    <%= post.content %>
+                    <%= post.likes %>
+                    <%= post.reposts %>
+                </div>
+            <% }) %>
+        </div>
+        <div class="right-container">
+
+        </div>
+    </div>
 </body>
 </html>

@@ -1,4 +1,5 @@
 const express = require('express')
+const path = require('path');
 const sqlite3 = require('sqlite3').verbose()
 const session = require('express-session');
 const app = express()
@@ -16,6 +17,7 @@ app.set('view engine', 'ejs');
 
 //middleware
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
 let sql;
 
@@ -53,10 +55,11 @@ app.get('/', (req, res) => {
       [req.session.user.username],
       (err, rows) => {
         if (err) console.error(err);
-        
+
         res.render('home', {
             user: req.session.user,
-            your_posts: rows
+            your_posts: rows,
+            pfp: ":)"
         });
       }
     );
