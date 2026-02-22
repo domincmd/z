@@ -33,14 +33,35 @@ const db = new sqlite3.Database('./x.db', sqlite3.OPEN_READWRITE, (err) => {
 
 db.run(sql)*/
 
+/*sql = `CREATE TABLE tweets (
+    id INTEGER PRIMARY KEY,
+    user TEXT,
+    content TEXT,
+    likes INTEGER,
+    reposts INTEGER
+);`
+
+db.run(sql)*/
+
 app.get('/', (req, res) => {
     if (!req.session.user) {
         return res.redirect('/enter');
     }
 
-    res.render('home', {
-        user: req.session.user
-    });
+    db.all(
+      `SELECT * FROM tweets WHERE user = ?`,
+      [req.session.user.username],
+      (err, rows) => {
+        if (err) console.error(err);
+        
+        res.render('home', {
+            user: req.session.user,
+            your_posts: rows
+        });
+      }
+    );
+
+    
 });
 
 app.get('/enter', (req, res) => {
@@ -63,10 +84,7 @@ app.post("/signup", (req, res) => {
         }
 
         // insert user into db
-        db.run(
-            "INSERT INTO users(username, password) VALUES (?, ?)",
-            [data.username, data.password],
-            (err) => {
+        db.run("INSERT INTO users(username, password) VALUES (?, ?)", [data.username, data.password], (err) => {
                 if (err) {
                     console.error(err);
                     return res.render('enter.ejs', {signup_message: "insert error", login_message: null})
@@ -98,6 +116,21 @@ app.post("/login", (req, res) => {
 
         return res.render('enter.ejs', {signup_message: null, login_message: "username not found"})
     });
+})
+
+app.post("/post", (req, res) => {
+    const tweet = req.body.tweet;
+
+    if (!req.session.user) {
+        return res.redirect('/enter');
+    }
+
+    db.run("INSERT INTO tweets(user, content, likes, reposts) VALUES (?, ?, ?, ?)", [req.session.user.username, tweet, 0, 0], (err) => {
+        if (err) {console.log(err); return res.send("error: " + err)}
+        
+        return res.redirect("/")
+    })
+
 })
 
 app.listen(port, () => {
