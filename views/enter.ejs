@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login or signup</title>
+</head>
+<body>
+    <h2>signup</h2>
+    <form action="/signup" method="POST">
+        <p>username</p>
+        <input type="text" name="username" />
+        <p>password</p>
+        <input type="password" name="password" />
+        <p>confirm password</p>
+        <input type="password" name="cpassword" />
+        <button type="submit">Send</button>
+        <p class="error"><%= signup_message %></p>
+    </form>
+    <h2>login</h2>
+    <form action="/login" method="POST">
+        <p>username</p>
+        <input type="text" name="username" />
+        <p>password</p>
+        <input type="password" name="password" />
+        <button type="submit">Send</button>
+        <p class="error"><%= login_message %></p>
+    </form>
+</body>
+</html>
