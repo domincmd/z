@@ -1,3 +1,15 @@
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-Regular.woff2') format('woff2'),
+       url('/fonts/JetBrainsMono-Bold.woff2') format('woff2'),
+       url('/fonts/JetBrainsMono-ExtraBold.woff2') format('woff2'),
+       url('/fonts/JetBrainsMono-Italic.woff2') format('woff2'),
+       url('/fonts/JetBrainsMono-SemiBold.woff2') format('woff2'),;
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 * {
     padding: 0;
     margin: 0;
@@ -55,7 +67,7 @@ body {
 .pfp {
     box-sizing: border-box;
     padding: 10px;
-    border: 1px solid var(--text);
+    border: 2px solid var(--text);
     border-radius: 50%;
     aspect-ratio: 1/1;
     max-width: 45px;
@@ -81,7 +93,7 @@ body {
 }
 
 .middle-container {
-    width: 30%;
+    width: 40%;
     height: 100vh;
     border-left: 1px solid var(--background-accent);
     border-right: 1px solid var(--background-accent);
@@ -133,6 +145,14 @@ body {
     margin-right: 20px;
 }
 
+.emoji-btn {
+    width: 32px;
+    height: 32px;
+    color: var(--text);
+    fill: var(--text);
+    cursor: pointer;
+}
+
 .outer-pfp {
     height: 100%;
 }
@@ -140,5 +160,42 @@ body {
 .outer-post {
     width: 100%;
     display: flex;
-    justify-content: right;
+    justify-content: space-between;
+}
+
+.right-container {
+    width: 20%;
+    height: 100vh;
+    box-sizing: border-box;
+    padding: 20px;
+}
+
+.right-container > .rounded-container {
+    border: 1px solid var(--background-accent);
+    border-radius: 20px;
+    box-sizing: border-box;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+a {
+    color: var(--light-red);
+}
+
+.post {
+    border-bottom: 1px solid var(--background-accent);
+    box-sizing: border-box;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.content {
+    flex: 1;
+    box-sizing: border-box;
+    padding: 0px 15px;
+    display: flex;
+    justify-content: space-around;
+    align-items: left;
+    flex-direction: column;
 }

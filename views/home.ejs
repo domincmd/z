@@ -38,22 +38,36 @@
                 <form action="/post" method="POST">
                     <textarea type="text" name="tweet" class="post-input" placeholder="say something..."></textarea>
                     <div class="outer-post">
-                        <button type="submit" class="post-btn">post</button>
+                        <img src="/images/emoji.svg" alt="" onclick="alert('emoji')" class="emoji-btn"><button type="submit" class="post-btn">post</button>
                     </div>
                 </form>
             </div>
 
             <% your_posts.forEach(post => { %>
                 <div class="post">
-                    <strong><%= post.user %></strong>
-                    <%= post.content %>
-                    <%= post.likes %>
-                    <%= post.reposts %>
+                    <div class="pfp">
+                        :)
+                    </div>
+                    <div class="content">
+                        <strong><%= post.user %></strong>
+                        <%= post.content %>
+                        <%= post.likes %>
+                        <%= post.reposts %>
+                    </div>
                 </div>
             <% }) %>
         </div>
         <div class="right-container">
-
+            <div class="rounded-container">
+                <h4>check out the github repo for this project!</h2><br>
+                <p>see the link below for the source code:</p>
+                <a href="https://github.com/domincmd/z">domincmd's github</a>
+            </div>
+            <div class="rounded-container">
+                <h4>about z</h2><br>
+                <p>z is fully a passion project and inspired on X (or twitter). feel free to browse around and thank you for visiting!</p>
+                <a href="https://github.com/domincmd/z">domincmd's github</a>
+            </div>
         </div>
     </div>
 </body>
