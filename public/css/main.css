@@ -69,9 +69,9 @@ body {
     padding: 10px;
     border: 2px solid var(--text);
     border-radius: 50%;
-    aspect-ratio: 1/1;
     max-width: 45px;
     text-align: center;
+    max-height: 45px;
 }
 
 .sections-list {
@@ -198,4 +198,20 @@ a {
     justify-content: space-around;
     align-items: left;
     flex-direction: column;
+}
+
+.reactions > img {
+    width: 16px;
+    height: 16px;
+}
+
+.reactions {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    gap: 5px;
+}
+
+.hidden {
+    display: none;
 }

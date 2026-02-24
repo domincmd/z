@@ -18,6 +18,7 @@ app.set('view engine', 'ejs');
 //middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
 
 let sql;
 
@@ -39,8 +40,6 @@ db.run(sql)*/
     id INTEGER PRIMARY KEY,
     user TEXT,
     content TEXT,
-    likes INTEGER,
-    reposts INTEGER
 );`
 
 db.run(sql)*/
@@ -128,12 +127,36 @@ app.post("/post", (req, res) => {
         return res.redirect('/enter');
     }
 
-    db.run("INSERT INTO tweets(user, content, likes, reposts) VALUES (?, ?, ?, ?)", [req.session.user.username, tweet, 0, 0], (err) => {
+    db.run("INSERT INTO tweets(user, content) VALUES (?, ?)", [req.session.user.username, tweet], (err) => {
         if (err) {console.log(err); return res.send("error: " + err)}
         
         return res.redirect("/")
     })
 
+})
+
+app.post("/like", (req, res) => {
+    const { post_id, username } = req.body;
+
+    //console.log(req.body)
+
+    if (!post_id || !username) {
+        return res.status(400).json({ error: "Missing data" });
+    }
+
+
+    //THIS ADDS A LIKE, WE NEED A FUNCTION TO GET LIKES AND ACTUALLY KNOW IF THE USER LIKED IT
+    /*db.run(`INSERT INTO post_likes (post_id, username) VALUES (?, ?)`, [post_id, username], function (err) {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        res.json({
+            success: true,
+            post_id,
+            username
+        });
+    });*/
 })
 
 app.listen(port, () => {

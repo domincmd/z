@@ -42,7 +42,24 @@
                     </div>
                 </form>
             </div>
+            <!--
+            
+                <div class="post">
+                    <div class="pfp">
+                        :)
+                    </div>
+                    <div class="content">
+                        <strong>post.user</strong>
+                        post.content
+                        <div class="reactions">
+                            <img src="/images/heart.svg" alt="" onclick="sendLike(this)">0
+                            <img src="/images/repost.svg" alt="">0
+                            <span class="hidden post-id">post.id</span>
+                        </div>
+                    </div>
+                </div>
 
+            -->
             <% your_posts.forEach(post => { %>
                 <div class="post">
                     <div class="pfp">
@@ -51,8 +68,11 @@
                     <div class="content">
                         <strong><%= post.user %></strong>
                         <%= post.content %>
-                        <%= post.likes %>
-                        <%= post.reposts %>
+                        <div class="reactions">
+                            <img src="/images/heart.svg" alt="" onclick="getLikes(this)">0
+                            <img src="/images/repost.svg" alt="">0
+                            <span class="hidden post-id"><%= post.id %></span>
+                        </div>
                     </div>
                 </div>
             <% }) %>
@@ -71,4 +91,27 @@
         </div>
     </div>
 </body>
+<script>
+    function getLikes(element) {
+        const id = Number(element.parentElement.querySelector(".post-id").textContent)
+        const user = element.parentElement.parentElement.querySelector("strong").textContent
+
+        if (isNaN(id)) {console.error("id is not a nubmer!"); return}
+
+        
+        fetch("/like", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                post_id: id,
+                username: user
+            })
+        }).then(data => {
+            console.log(data);
+        })
+    }
+    
+</script>
 </html>
