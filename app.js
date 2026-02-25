@@ -135,28 +135,57 @@ app.post("/post", (req, res) => {
 
 })
 
-app.post("/like", (req, res) => {
+app.post("/likes", (req, res) => {
     const { post_id, username } = req.body;
 
-    //console.log(req.body)
-
-    if (!post_id || !username) {
+    if (post_id == null || username == null) {
         return res.status(400).json({ error: "Missing data" });
     }
 
-
     //THIS ADDS A LIKE, WE NEED A FUNCTION TO GET LIKES AND ACTUALLY KNOW IF THE USER LIKED IT
-    /*db.run(`INSERT INTO post_likes (post_id, username) VALUES (?, ?)`, [post_id, username], function (err) {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+    db.get(
+    `
+    SELECT
+      COUNT(*) AS count,
+      EXISTS(
+        SELECT 1 FROM post_likes WHERE post_id = ? AND username = ?
+      ) AS has_user
+    FROM post_likes
+    WHERE post_id = ?
+    `,
+    [post_id, username, post_id],
+    (err, row) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
 
-        res.json({
-            success: true,
-            post_id,
-            username
-        });
-    });*/
+      console.log(row);
+
+      res.json({
+        count: row.count,
+        hasUser: !!row.has_user
+      });
+    }
+  );
+})
+
+app.post("/authorcontent", (req, res) => {
+    const { post_id } = req.body;
+
+    if (post_id == null) {
+        return res.status(400).json({ error: "Missing data" });
+    }
+    
+    db.get(
+    "SELECT user, content FROM tweets WHERE id = ?",
+    [post_id],
+    (err, row) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (!row) return res.status(404).json({ error: "Not found" });
+
+      res.json(row);
+    }
+  );
 })
 
 app.listen(port, () => {

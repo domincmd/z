@@ -60,22 +60,9 @@
                 </div>
 
             -->
-            <% your_posts.forEach(post => { %>
-                <div class="post">
-                    <div class="pfp">
-                        :)
-                    </div>
-                    <div class="content">
-                        <strong><%= post.user %></strong>
-                        <%= post.content %>
-                        <div class="reactions">
-                            <img src="/images/heart.svg" alt="" onclick="getLikes(this)">0
-                            <img src="/images/repost.svg" alt="">0
-                            <span class="hidden post-id"><%= post.id %></span>
-                        </div>
-                    </div>
-                </div>
-            <% }) %>
+            <div class="general-post-container">
+
+            </div>
         </div>
         <div class="right-container">
             <div class="rounded-container">
@@ -92,14 +79,10 @@
     </div>
 </body>
 <script>
-    function getLikes(element) {
-        const id = Number(element.parentElement.querySelector(".post-id").textContent)
-        const user = element.parentElement.parentElement.querySelector("strong").textContent
+    const generalPostContainer = document.querySelector(".general-post-container")
 
-        if (isNaN(id)) {console.error("id is not a nubmer!"); return}
-
-        
-        fetch("/like", {
+    function getLikes(id, user) { //in this case, user refers to the user viewing the post, to see if he has liked it or not
+        return fetch("/likes", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -108,9 +91,69 @@
                 post_id: id,
                 username: user
             })
-        }).then(data => {
-            console.log(data);
-        })
+        }).then(res => res.json());
+    }
+
+    function getAuthorAndContent(id) {
+        return fetch("/authorcontent", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                post_id: id
+            })
+        }).then(res => res.json());
+    }
+
+    function renderPost(id=1, user="domin") { //id of the post
+
+        if (isNaN(id)) {console.error("id is not a nubmer!"); return}
+
+        //build element
+
+        const post = document.createElement("div")
+        const pfp = document.createElement("div")
+        const contentContainer = document.createElement("div")
+        const reactions = document.createElement("div")
+
+        const strong = document.createElement("strong")
+        const content = document.createElement("span")
+
+        content.textContent = "TESTCONTENT123123"
+        strong.textContent = "TESTNAME"
+
+        post.classList.add("post")
+        pfp.classList.add("pfp")
+        contentContainer.classList.add("content-container")
+        reactions.classList.add("reactions")
+
+        pfp.textContent = ":)"
+
+        contentContainer.appendChild(strong)
+        contentContainer.appendChild(content)
+        contentContainer.appendChild(reactions)
+        post.appendChild(pfp)
+        post.appendChild(contentContainer)
+
+        //get and insert data
+
+        const requests = [
+            getLikes(id, user),
+            getAuthorAndContent(id),
+        ];
+        
+        Promise.all(requests)
+        .then(results => {
+            console.log(results);
+
+            content.textContent = results[1].content
+            strong.textContent = results[1].user
+
+            generalPostContainer.appendChild(post)
+        });
+
+        
     }
     
 </script>
