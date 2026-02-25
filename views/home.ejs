@@ -94,6 +94,19 @@
         }).then(res => res.json());
     }
 
+    function getReposts(id, user) { //in this case, user refers to the user viewing the post, to see if he has reposted it or not
+        return fetch("/reposts", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                post_id: id,
+                username: user
+            })
+        }).then(res => res.json());
+    }
+
     function getAuthorAndContent(id) {
         return fetch("/authorcontent", {
             method: "POST",
@@ -120,6 +133,14 @@
         const strong = document.createElement("strong")
         const content = document.createElement("span")
 
+        const likeImg = document.createElement("img")
+        const likeSpan = document.createElement("span")
+        const repostImg = document.createElement("img")
+        const repostSpan = document.createElement("span")
+
+        likeImg.src = "/images/heart.svg"
+        repostImg.src = "/images/repost.svg"
+
         content.textContent = "TESTCONTENT123123"
         strong.textContent = "TESTNAME"
 
@@ -130,6 +151,10 @@
 
         pfp.textContent = ":)"
 
+        reactions.appendChild(likeImg)
+        reactions.appendChild(likeSpan)
+        reactions.appendChild(repostImg)
+        reactions.appendChild(repostSpan)
         contentContainer.appendChild(strong)
         contentContainer.appendChild(content)
         contentContainer.appendChild(reactions)
@@ -140,15 +165,20 @@
 
         const requests = [
             getLikes(id, user),
-            getAuthorAndContent(id),
+            getReposts(id, user),
+            getAuthorAndContent(id)
         ];
         
         Promise.all(requests)
         .then(results => {
             console.log(results);
 
-            content.textContent = results[1].content
-            strong.textContent = results[1].user
+            content.textContent = results[2].content
+            strong.textContent = results[2].user
+
+            likeSpan.textContent = results[0].count
+            repostSpan.textContent = results[1].count
+            
 
             generalPostContainer.appendChild(post)
         });

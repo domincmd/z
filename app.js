@@ -169,6 +169,40 @@ app.post("/likes", (req, res) => {
   );
 })
 
+app.post("/reposts", (req, res) => {
+    const { post_id, username } = req.body;
+
+    if (post_id == null || username == null) {
+        return res.status(400).json({ error: "Missing data" });
+    }
+
+    //THIS ADDS A LIKE, WE NEED A FUNCTION TO GET LIKES AND ACTUALLY KNOW IF THE USER LIKED IT
+    db.get(
+    `
+    SELECT
+      COUNT(*) AS count,
+      EXISTS(
+        SELECT 1 FROM post_reposts WHERE post_id = ? AND username = ?
+      ) AS has_user
+    FROM post_reposts
+    WHERE post_id = ?
+    `,
+    [post_id, username, post_id],
+    (err, row) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+
+      console.log(row);
+
+      res.json({
+        count: row.count,
+        hasUser: !!row.has_user
+      });
+    }
+  );
+})
+
 app.post("/authorcontent", (req, res) => {
     const { post_id } = req.body;
 
