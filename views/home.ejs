@@ -138,13 +138,19 @@
         const repostImg = document.createElement("img")
         const repostSpan = document.createElement("span")
 
-        likeImg.src = "/images/heart.svg"
-        repostImg.src = "/images/repost.svg"
+        likeImg.src = "/images/heart_empty.svg"
+        likeImg.addEventListener("mousedown", e => {
+            toggleLike(id)
+        })
+        likeImg.classList.add("like-img")
+        likeSpan.classList.add("like-span")
+        repostImg.src = "/images/repost_empty.svg"
 
         content.textContent = "TESTCONTENT123123"
         strong.textContent = "TESTNAME"
 
         post.classList.add("post")
+        post.classList.add(`post-${id}`)
         pfp.classList.add("pfp")
         contentContainer.classList.add("content-container")
         reactions.classList.add("reactions")
@@ -177,7 +183,22 @@
             strong.textContent = results[2].user
 
             likeSpan.textContent = results[0].count
+            if (results[0].hasUser) {
+                likeImg.classList.add("full")
+                likeImg.src = "/images/heart_full.svg"
+            }else{ 
+                likeImg.classList.add("empty")
+                likeImg.src = "/images/heart_empty.svg"
+            }
+
             repostSpan.textContent = results[1].count
+            if (results[1].hasUser) {
+                repostImg.classList.add("full")
+                repostImg.src = "/images/repost_full.svg"
+            }else{ 
+                repostImg.classList.add("empty")
+                repostImg.src = "/images/repost_empty.svg"
+            }
             
 
             generalPostContainer.appendChild(post)
@@ -185,6 +206,48 @@
 
         
     }
+
+    function toggleLike(id) {
+        if (isNaN(id)) {
+            console.error("id is not a number!");
+            return;
+        }
+
+        fetch("/togglelike", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ post_id: id })
+        })
+        .then(res => res.json())   // parse JSON
+        .then(data => {
+            console.log(data);     // now you have the actual result object
+            
+            const matching_posts = document.querySelectorAll(`.post-${(id)}`)
+
+            matching_posts.forEach(post => {
+                const likeImg = post.querySelector(".like-img")
+                const likeSpan = post.querySelector(".like-span")
+
+                if (data.has_liked == 1) {
+                    likeImg.classList.replace("empty", "full")
+                    likeImg.src = "/images/heart_full.svg"
+                }else{ 
+                    likeImg.classList.replace("full", "empty")
+                    likeImg.src = "/images/heart_empty.svg"
+                }
+
+                likeSpan.textContent = data.current_like_count
+            })
+        })
+        .catch(err => console.error(err));
+    }
+
+
+
+
+    renderPost(1) //render a test post
     
 </script>
 </html>

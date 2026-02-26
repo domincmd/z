@@ -203,13 +203,25 @@ a {
 .reactions > img {
     width: 16px;
     height: 16px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    border-radius: 25%;
+    padding: 5px;
+}
+
+.reactions > .full:hover {
+    background-color: rgba(229, 56, 59, 0.25);
+}
+
+.reactions > .empty:hover {
+    background-color: rgba(150, 150, 150, 0.25);
 }
 
 .reactions {
     display: flex;
     justify-content: left;
     align-items: center;
-    gap: 5px;
+    gap: 2px;
 }
 
 .hidden {

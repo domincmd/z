@@ -159,7 +159,7 @@ app.post("/likes", (req, res) => {
         return res.status(500).json({ error: err.message });
       }
 
-      console.log(row);
+      //console.log(row);
 
       res.json({
         count: row.count,
@@ -193,7 +193,7 @@ app.post("/reposts", (req, res) => {
         return res.status(500).json({ error: err.message });
       }
 
-      console.log(row);
+      //console.log(row);
 
       res.json({
         count: row.count,
@@ -221,6 +221,77 @@ app.post("/authorcontent", (req, res) => {
     }
   );
 })
+
+app.post("/togglelike", (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/enter');
+    }
+
+    const { post_id } = req.body;
+    const user = req.session.user;
+
+    db.serialize(() => {
+        db.run("BEGIN TRANSACTION");
+
+        // 1. Try removing the like
+        db.run(
+            `DELETE FROM post_likes
+             WHERE post_id = ? AND username = ?`,
+            [post_id, user],
+            function (err) {
+                if (err) {
+                    db.run("ROLLBACK");
+                    return res.status(500).json({ error: "db error" });
+                }
+
+                const removed = this.changes === 1;
+
+                const finish = (hasLiked) => {
+                    // 3. Get updated like count
+                    db.get(
+                        `SELECT COUNT(*) AS count
+                         FROM post_likes
+                         WHERE post_id = ?`,
+                        [post_id],
+                        (err2, row) => {
+                            if (err2) {
+                                db.run("ROLLBACK");
+                                return res.status(500).json({ error: "db error" });
+                            }
+
+                            db.run("COMMIT");
+
+                            res.json({
+                                has_liked: hasLiked,           // 1 or 0
+                                current_like_count: row.count  // total likes
+                            });
+                        }
+                    );
+                };
+
+                // 2. If removed → user unliked
+                if (removed) {
+                    finish(0);
+                } else {
+                    // otherwise insert new like
+                    db.run(
+                        `INSERT INTO post_likes (post_id, username)
+                         VALUES (?, ?)`,
+                        [post_id, user],
+                        function (err3) {
+                            if (err3) {
+                                db.run("ROLLBACK");
+                                return res.status(500).json({ error: "db error" });
+                            }
+
+                            finish(1);
+                        }
+                    );
+                }
+            }
+        );
+    });
+});
 
 app.listen(port, () => {
     console.log(`listening on port ${port}`)
