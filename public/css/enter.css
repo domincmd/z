@@ -1,0 +1,57 @@
+.main-container {
+    gap: 100px;
+}
+
+.login-container, .signup-container {
+    height: 370px;
+    width: max(200px, 15%);
+    position: relative;
+}
+
+.message {
+    font-size: 0.8rem;
+    font-style: italic;
+    margin-top: 10px;
+}
+
+form > * {
+    margin-bottom: 10px;
+}
+
+form > p {
+    text-decoration:underline;
+}
+
+input[type="text"], input[type="password"] {
+    outline: none;
+    border: 1px solid var(--background-accent);
+    padding: 5px;
+    border-radius: 10px;
+    color: white;
+    background: transparent;
+    width: calc(100% - 15px);
+}
+
+button[type="submit"] {
+    outline: none;
+    width: calc(100% - 30px);
+    padding: 5px 10px;
+    border-radius: 10px;
+    background-color: var(--light-red);
+    color: var(--text);
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    bottom: 10px;
+    right: 10px;
+    margin-top: 10px;
+    position: absolute;
+    bottom: 5px;
+    left: 15px;
+}
+
+.small {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+}

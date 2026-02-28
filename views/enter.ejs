@@ -3,28 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>login or signup</title>
+    <title>welcome</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/enter.css">
 </head>
 <body>
-    <h2>signup</h2>
-    <form action="/signup" method="POST">
-        <p>username</p>
-        <input type="text" name="username" />
-        <p>password</p>
-        <input type="password" name="password" />
-        <p>confirm password</p>
-        <input type="password" name="cpassword" />
-        <button type="submit">Send</button>
-        <p class="error"><%= signup_message %></p>
-    </form>
-    <h2>login</h2>
-    <form action="/login" method="POST">
-        <p>username</p>
-        <input type="text" name="username" />
-        <p>password</p>
-        <input type="password" name="password" />
-        <button type="submit">Send</button>
-        <p class="error"><%= login_message %></p>
-    </form>
+    <div class="main-container">
+        <div class="signup-container rounded-container">
+            <h2>sign up</h2>
+            <p style="margin-bottom: 20px;">welcome!</p>
+            <form action="/signup" method="POST">
+                <p>username:</p>
+                <input type="text" name="username" />
+                <p>password:</p>
+                <input type="password" name="password" />
+                <p>confirm password:</p>
+                <input type="password" name="cpassword" /><br>
+                <button type="submit">sign up</button><br>
+                <span class="message"><%= signup_message %></span>
+            </form>
+        </div>
+        
+        <div class="login-container rounded-container">
+            <h2>login</h2>
+            <p style="margin-bottom: 20px;">its good to see you again</p>
+            <form action="/login" method="POST">
+                <p>username:</p>
+                <input type="text" name="username" />
+                <p>password:</p>
+                <input type="password" name="password" /><br>
+                <button type="submit">log in</button><br>
+                <span class="message"><%= login_message %></span>
+            </form>
+        </div>
+    </div>
+    <p class="small">made by domincmd. know more about the project: <a href="https://github.com/domincmd/z">github repo</a></p>
 </body>
 </html>

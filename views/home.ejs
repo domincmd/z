@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>home</title>
     <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/home.css">
 </head>
 <body>
     <div class="main-container">
@@ -36,7 +37,7 @@
                     </div>
                 </div>
                 <form action="/post" method="POST">
-                    <textarea type="text" name="tweet" class="post-input" placeholder="say something..."></textarea>
+                    <textarea type="text" name="tweet" class="post-input" placeholder="say something..." required></textarea>
                     <div class="outer-post">
                         <img src="/images/emoji.svg" alt="" onclick="alert('emoji')" class="emoji-btn"><button type="submit" class="post-btn">post</button>
                     </div>
@@ -222,7 +223,7 @@
         })
         .then(res => res.json())   // parse JSON
         .then(data => {
-            console.log(data);     // now you have the actual result object
+            console.log(data);
             
             const matching_posts = document.querySelectorAll(`.post-${(id)}`)
 

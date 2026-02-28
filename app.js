@@ -123,6 +123,10 @@ app.post("/login", (req, res) => {
 app.post("/post", (req, res) => {
     const tweet = req.body.tweet;
 
+    if (tweet == "") {
+        return res.send("cant tweet nothing")
+    }
+
     if (!req.session.user) {
         return res.redirect('/enter');
     }
@@ -228,7 +232,7 @@ app.post("/togglelike", (req, res) => {
     }
 
     const { post_id } = req.body;
-    const user = req.session.user;
+    const user = req.session.user.username;
 
     db.serialize(() => {
         db.run("BEGIN TRANSACTION");
