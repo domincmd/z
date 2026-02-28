@@ -49,15 +49,15 @@ app.get('/', (req, res) => {
         return res.redirect('/enter');
     }
 
-    db.all(
-      `SELECT * FROM tweets WHERE user = ?`,
-      [req.session.user.username],
+    db.get(
+      `SELECT COUNT(*) AS total FROM tweets;`,
+      [],
       (err, rows) => {
         if (err) console.error(err);
 
         res.render('home', {
             user: req.session.user,
-            your_posts: rows,
+            posts: rows.total,
             pfp: ":)"
         });
       }
@@ -295,6 +295,32 @@ app.post("/togglelike", (req, res) => {
             }
         );
     });
+});
+
+app.get("/profile", (req, res) => {
+    const username = req.query.u;
+
+    if (!req.session.user) {
+        return res.redirect('/enter');
+    }
+
+    db.get(
+        "SELECT COUNT(*) AS count FROM users WHERE username = ?;",
+        [username],
+        (err, row) => {
+            if (err) {
+                console.error(err);
+                return res.send("error: " + err);
+            }
+
+            res.render('home', {
+                user_viewing: req.session.user,
+                user: username,
+                pfp: ":)"
+            });
+            
+        }
+    );
 });
 
 app.listen(port, () => {

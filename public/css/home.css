@@ -93,7 +93,7 @@
 
 .post-btn {
     padding: 5px 10px;
-    border-radius: 25vmin;
+    border-radius: 10px;
     background-color: var(--light-red);
     color: var(--text);
     border: none;
@@ -169,4 +169,12 @@
     justify-content: left;
     align-items: center;
     gap: 2px;
+}
+
+.z {
+    width: 48px;
+    height: 48px;
+    fill: white;
+    margin-bottom: 20px;
+    cursor: pointer;
 }

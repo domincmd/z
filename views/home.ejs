@@ -10,6 +10,7 @@
 <body>
     <div class="main-container">
         <div class="left-container">
+            <img src="/images/z.svg" class="z" alt="" onclick="window.location.href= '/'">
             <div class="profile-container">
                 <div class="pfp">
                     <%= pfp %>
@@ -248,7 +249,10 @@
 
 
 
-    renderPost(1) //render a test post
+
+    for (let i = 1; i <= <%= posts %>; i++) { //posts represents the number of posts in ejs
+        renderPost(i)
+    }
     
 </script>
 </html>
