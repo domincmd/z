@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= user %>'s profile</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/home.css">
+    <link rel="stylesheet" href="/css/profile.css">
+</head>
+<body>
+    <div class="main-container">
+        <div class="left-container">
+            <img src="/images/z.svg" class="z" alt="" onclick="window.location.href= '/'">
+            <div class="profile-container">
+                <div class="pfp">
+                    <%= pfp %>
+                </div>
+                <span><%= user.username %></span>
+                <img src="/images/exit.svg" alt="">
+            </div>
+            <div class="sections-list">
+                <div class="section">
+                    <span>home</span>
+                </div>
+                <div class="section">
+                    <span>profile</span>
+                </div>
+                <div class="section">
+                    <span>credits</span>
+                </div>
+            </div>
+        </div>
+        <div class="middle-container">
+            <div class="profile-container">
+                <span class="big-username"><%= user %></span>
+            </div>
+            <div class="general-post-container">
+
+            </div>
+        </div>
+        <div class="right-container">
+            <div class="rounded-container">
+                <h4>check out the github repo for this project!</h2><br>
+                <p>see the link below for the source code:</p>
+                <a href="https://github.com/domincmd/z">domincmd's github</a>
+            </div>
+            <div class="rounded-container">
+                <h4>about z</h2><br>
+                <p>z is fully a passion project and inspired on X (or twitter). feel free to browse around and thank you for visiting!</p>
+                <a href="https://github.com/domincmd/z">domincmd's github</a>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="/js/post_functionality.js"></script>
+<script>
+    <% tweets.forEach(tweet => { %>
+        renderPost(<%= tweet.id %>)
+    <% }) %>
+</script>
+</html>
+
+<%= user %>
+<%= user_viewing %>
+<%= tweets %>

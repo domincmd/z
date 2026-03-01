@@ -178,3 +178,7 @@
     margin-bottom: 20px;
     cursor: pointer;
 }
+
+strong {
+    cursor: pointer;
+}

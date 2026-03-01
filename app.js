@@ -313,11 +313,23 @@ app.get("/profile", (req, res) => {
                 return res.send("error: " + err);
             }
 
-            res.render('home', {
-                user_viewing: req.session.user,
-                user: username,
-                pfp: ":)"
-            });
+            db.all("SELECT * FROM tweets WHERE user = ?;", [username], (err, result) => {
+                if (err) {
+                    console.error(err);
+                    return res.send("error: " + err);
+                }
+
+                //console.log(result)
+
+                res.render('profile', {
+                    user_viewing: req.session.user.username,
+                    user: username,
+                    tweets: result,
+                    pfp: ":)"
+                });
+            })
+
+            
             
         }
     );
