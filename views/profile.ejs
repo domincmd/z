@@ -16,24 +16,31 @@
                 <div class="pfp">
                     <%= pfp %>
                 </div>
-                <span><%= user.username %></span>
-                <img src="/images/exit.svg" alt="">
+                <span><%= user %></span>
+                <img src="/images/exit.svg" alt="" onclick="window.location.href='/exit'">
             </div>
             <div class="sections-list">
-                <div class="section">
+                <div class="section" onclick="window.location.href='/'">
                     <span>home</span>
                 </div>
-                <div class="section">
+                <div class="section" onclick="window.location.href=('/profile?u= <%=user%>'.replace(' ', ''))"> <!-- remove space required for ejs to format -->
                     <span>profile</span>
                 </div>
-                <div class="section">
+                <div class="section" onclick="window.location.href='/credits'">
                     <span>credits</span>
                 </div>
             </div>
         </div>
         <div class="middle-container">
-            <div class="profile-container">
-                <span class="big-username"><%= user %></span>
+            <div class="big-profile-container">
+                <div class="big-pfp">
+                    <%= user_viewed_pfp %>
+                </div>
+                <span class="big-username"><%= user_viewed %></span>
+            </div>
+            <div class="small-container">
+                <span>tweets</span>
+                <div class="underline"></div>
             </div>
             <div class="general-post-container">
 
@@ -60,7 +67,3 @@
     <% }) %>
 </script>
 </html>
-
-<%= user %>
-<%= user_viewing %>
-<%= tweets %>

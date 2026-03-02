@@ -56,7 +56,7 @@ app.get('/', (req, res) => {
         if (err) console.error(err);
 
         res.render('home', {
-            user: req.session.user,
+            user: req.session.user.username,
             posts: rows.total,
             pfp: ":)"
         });
@@ -73,7 +73,17 @@ app.get('/enter', (req, res) => {
 app.post("/signup", (req, res) => {
     const data = req.body;
 
-    if (data.password != data.cpassword) return res.render('enter.ejs', {signup_message: "passwords do not match", login_message: null})
+    if (data.password != data.cpassword) {return res.render('enter.ejs', {signup_message: "passwords do not match", login_message: null})}
+    if (
+        data.username.includes(" ") ||
+        data.password.includes(" ") ||
+        data.cpassword.includes(" ")
+    ) {
+        return res.render('enter.ejs', {
+            signup_message: "do not use spaces in username or password",
+            login_message: null
+        });
+    }
 
     db.all('SELECT * FROM users', [], (err, rows) => {
         if (err) {console.error(err); return res.render('enter.ejs', {signup_message: "db error", login_message: null});}
@@ -322,10 +332,12 @@ app.get("/profile", (req, res) => {
                 //console.log(result)
 
                 res.render('profile', {
-                    user_viewing: req.session.user.username,
-                    user: username,
+                    user: req.session.user.username, //actual user
+                    pfp: ":)", //actual user's pfp
+                    user_viewed: username, //user that is being viewed
+                    user_viewed_pfp: ":0", //user being viewed pfp
                     tweets: result,
-                    pfp: ":)"
+                    
                 });
             })
 
@@ -334,6 +346,11 @@ app.get("/profile", (req, res) => {
         }
     );
 });
+
+app.get('/exit', (req, res) => {
+    req.session.user = null
+    res.redirect('/')
+})
 
 app.listen(port, () => {
     console.log(`listening on port ${port}`)

@@ -15,17 +15,17 @@
                 <div class="pfp">
                     <%= pfp %>
                 </div>
-                <span><%= user.username %></span>
-                <img src="/images/exit.svg" alt="">
+                <span><%= user %></span>
+                <img src="/images/exit.svg" alt="" onclick="window.location.href='/exit'">
             </div>
             <div class="sections-list">
-                <div class="section">
+                <div class="section" onclick="window.location.href='/'">
                     <span>home</span>
                 </div>
-                <div class="section">
+                <div class="section" onclick="window.location.href=('/profile?u= <%= user %>'.replace(' ', ''))">
                     <span>profile</span>
                 </div>
-                <div class="section">
+                <div class="section" onclick="window.location.href='/credits'">
                     <span>credits</span>
                 </div>
             </div>

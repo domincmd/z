@@ -1,0 +1,47 @@
+.big-profile-container {
+    width: 100%;
+    border-bottom: 1px solid var(--background-accent);
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: left;
+    gap: 15px;
+    align-items: center;
+}
+
+.big-profile-container > .big-pfp {
+    border: 3px solid white;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.big-profile-container {
+    font-size: 1.5rem;
+    font-weight: bolder;
+}
+
+.small-container {
+    border-bottom: 1px solid var(--background-accent);
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.small-container > .underline {
+    width: 95px;
+    height: 5px;
+    background-color: var(--light-red);
+    border-radius: 25vmin;
+}
