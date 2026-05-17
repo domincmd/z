@@ -2,7 +2,7 @@ import express from "express"
 import path from "path"
 import { fileURLToPath } from 'node:url'
 import session from "express-session"
-import { getUserInfoByUsername, getUserInfo, insertUser } from "./js/db.js"
+import { getUserInfoByUsername, getUserInfo, insertUser, insertTweet, getTweetsFromUser } from "./js/db.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -31,7 +31,6 @@ app.get('/', (req, res) => {
     }
 
     const info = getUserInfo(req.session.userid);
-    console.log(info);
 
     res.render('home', {
         username: info.result.username,
@@ -60,8 +59,6 @@ app.post("/signup", (req, res) => {
         });
     }
 
-    console.log(data)
-
     // insert user into db
     const insert = insertUser(data.username, ":)", data.password)
     if (insert.success == true) {return res.render('enter.ejs', {signup_message: "successfully signed up, you may now log in", login_message: null})}
@@ -75,34 +72,65 @@ app.post("/login", (req, res) => {
     if (info.success == false) {
         return res.send(info.error)
     }
-
-    console.log(info)
     if (info.result.password !== data.password) {
         return res.send("passwords do not match")
     }
     req.session.userid = info.result.id
     return res.redirect('/');
 })
-/*
+
 app.post("/post", (req, res) => {
     const tweet = req.body.tweet;
+    if (!req.session.userid) {
+        return res.redirect('/enter');
+    }
 
     if (tweet == "") {
         return res.send("cant tweet nothing")
     }
 
-    if (!req.session.user) {
+    const insert = insertTweet(req.session.userid, tweet)
+    if (insert.success == false) {
+        console.log(insert.error)
+        return res.send(insert.error)
+    }
+    return res.redirect('/');
+})
+
+app.get("/profile", (req, res) => {
+    const viewing = req.query.u;
+
+    if (!req.session.userid) {
         return res.redirect('/enter');
     }
 
-    db.run("INSERT INTO tweets(user, content) VALUES (?, ?)", [req.session.user.username, tweet], (err) => {
-        if (err) {console.log(err); return res.send("error: " + err)}
-        
-        return res.redirect("/")
-    })
+    const info = getUserInfo(req.session.userid);
+    if (info.success == false) {
+        console.log(info.error)
+        return res.send(info.error)
+    }
+    const viewingInfo = getUserInfoByUsername(viewing);
+    if (viewingInfo.success == false) {
+        console.log(viewingInfo.error)
+        return res.send(viewingInfo.error)
+    }
 
-})
+    const tweetsFromViewing = getTweetsFromUser(viewingInfo.result.id)
+    if (tweetsFromViewing.success == false) {
+        console.log(tweetsFromViewing.error)
+        return res.send(tweetsFromViewing.error)
+    }
 
+    res.render('profile', {
+        username: info.result.username, //actual user
+        pfp: info.result.pfp, //actual user's pfp
+        viewing: viewing, //user that is being viewed
+        viewing_pfp: viewingInfo.result.pfp, //user being viewed pfp
+        tweets: tweetsFromViewing.result,
+    });
+});
+
+/*
 app.post("/likes", (req, res) => {
     const { post_id, username } = req.body;
 
@@ -259,46 +287,6 @@ app.post("/togglelike", (req, res) => {
             }
         );
     });
-});
-
-app.get("/profile", (req, res) => {
-    const username = req.query.u;
-
-    if (!req.session.user) {
-        return res.redirect('/enter');
-    }
-
-    db.get(
-        "SELECT COUNT(*) AS count FROM users WHERE username = ?;",
-        [username],
-        (err, row) => {
-            if (err) {
-                console.error(err);
-                return res.send("error: " + err);
-            }
-
-            db.all("SELECT * FROM tweets WHERE user = ?;", [username], (err, result) => {
-                if (err) {
-                    console.error(err);
-                    return res.send("error: " + err);
-                }
-
-                //console.log(result)
-
-                res.render('profile', {
-                    user: req.session.user.username, //actual user
-                    pfp: ":)", //actual user's pfp
-                    user_viewed: username, //user that is being viewed
-                    user_viewed_pfp: ":0", //user being viewed pfp
-                    tweets: result,
-                    
-                });
-            })
-
-            
-            
-        }
-    );
 });
 */
 

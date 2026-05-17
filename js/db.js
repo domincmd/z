@@ -10,6 +10,7 @@ const getUserInfoVariable = db.prepare("SELECT * FROM users WHERE id = ?")
 const getUserInfoByUsernameVariable = db.prepare("SELECT * FROM users WHERE username = ?")
 
 const insertTweetVariable = db.prepare("INSERT INTO tweets (user_id, content) VALUES (?, ?)")
+const getTweetsFromUserVariable = db.prepare("SELECT * FROM tweets WHERE user_id = ?")
 
 /*TO ADD:
  - get if user liked a post or not
@@ -57,11 +58,23 @@ export function getUserInfoByUsername(username) { //when called, this function r
 
 export function insertTweet(user_id, content) {
   try {
-    const result = insertUserVariable.run(user_id, content)
+    const result = insertTweetVariable.run(user_id, content)
 
     return { success: true, result }
   } catch (error) {
     console.error("Failed to insert tweet:", error)
+
+    return { success: false, error: error.message }
+  }
+}
+
+export function getTweetsFromUser(user_id) {
+  try {
+    const result = getTweetsFromUserVariable.all(user_id)
+
+    return { success: true, result }
+  } catch (error) {
+    console.error("Failed to get tweets from user:", error)
 
     return { success: false, error: error.message }
   }
