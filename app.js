@@ -1,7 +1,12 @@
-const express = require('express')
-const path = require('path');
-const sqlite3 = require('sqlite3').verbose()
-const session = require('express-session');
+import express from "express"
+import path from "path"
+import { fileURLToPath } from 'node:url'
+import session from "express-session"
+import { getUserInfoByUsername, getUserInfo, insertUser } from "./js/db.js"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 const app = express()
 const port = 3000
 
@@ -20,48 +25,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-let sql;
-
-//connect to database
-const db = new sqlite3.Database('./x.db', sqlite3.OPEN_READWRITE, (err) => {
-    if (err) return console.error(err.message) //if there is an error, log it as such
-})
-
-//create users table
-/*sql = `CREATE TABLE users (
-    id INTEGER PRIMARY KEY,
-    username TEXT,
-    password TEXT
-);`
-
-db.run(sql)*/
-
-/*sql = `CREATE TABLE tweets (
-    id INTEGER PRIMARY KEY,
-    user TEXT,
-    content TEXT,
-);`
-
-db.run(sql)*/
-
 app.get('/', (req, res) => {
-    if (!req.session.user) {
+    if (!req.session.userid) {
         return res.redirect('/enter');
     }
 
-    db.get(
-      `SELECT COUNT(*) AS total FROM tweets;`,
-      [],
-      (err, rows) => {
-        if (err) console.error(err);
+    const info = getUserInfo(req.session.userid);
+    console.log(info);
 
-        res.render('home', {
-            user: req.session.user.username,
-            posts: rows.total,
-            pfp: ":)"
-        });
-      }
-    );
+    res.render('home', {
+        username: info.result.username,
+        pfp: info.result.pfp
+    });
 
     
 });
@@ -85,51 +60,30 @@ app.post("/signup", (req, res) => {
         });
     }
 
-    db.all('SELECT * FROM users', [], (err, rows) => {
-        if (err) {console.error(err); return res.render('enter.ejs', {signup_message: "db error", login_message: null});}
+    console.log(data)
 
-        // check if user already is taken
-        for (const row of rows) {
-            if (row.username === data.username) {
-                return res.render('enter.ejs', {signup_message: "username already in use", login_message: null})
-            }
-        }
-
-        // insert user into db
-        db.run("INSERT INTO users(username, password) VALUES (?, ?)", [data.username, data.password], (err) => {
-                if (err) {
-                    console.error(err);
-                    return res.render('enter.ejs', {signup_message: "insert error", login_message: null})
-                }
-
-                return res.render('enter.ejs', {signup_message: "successfully signed up, you may now log in", login_message: null})
-            }
-        );
-    });
+    // insert user into db
+    const insert = insertUser(data.username, ":)", data.password)
+    if (insert.success == true) {return res.render('enter.ejs', {signup_message: "successfully signed up, you may now log in", login_message: null})}
+    else {return res.send(insert.error)}
 });
 
 app.post("/login", (req, res) => {
     const data = req.body
 
-    db.all('SELECT * FROM users', [], (err, rows) => {
-        if (err) {console.error(err); return res.render('enter.ejs', {signup_message: "db error", login_message: null});}
+    const info = getUserInfoByUsername(data.username)
+    if (info.success == false) {
+        return res.send(info.error)
+    }
 
-        for (const row of rows) {
-            if (row.username === data.username) {
-                if (row.password != data.password) return res.render('enter.ejs', {signup_message: null, login_message: "password is incorrect"})
-                
-                //successfully logged in code
-                req.session.user = {
-                    username: data.username
-                };
-                return res.redirect('/');
-            }
-        }
-
-        return res.render('enter.ejs', {signup_message: null, login_message: "username not found"})
-    });
+    console.log(info)
+    if (info.result.password !== data.password) {
+        return res.send("passwords do not match")
+    }
+    req.session.userid = info.result.id
+    return res.redirect('/');
 })
-
+/*
 app.post("/post", (req, res) => {
     const tweet = req.body.tweet;
 
@@ -346,9 +300,10 @@ app.get("/profile", (req, res) => {
         }
     );
 });
+*/
 
 app.get('/exit', (req, res) => {
-    req.session.user = null
+    req.session.userid = null
     res.redirect('/')
 })
 
