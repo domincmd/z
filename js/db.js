@@ -12,11 +12,13 @@ const getUserInfoByUsernameVariable = db.prepare("SELECT * FROM users WHERE user
 const insertTweetVariable = db.prepare("INSERT INTO tweets (user_id, content) VALUES (?, ?)")
 const getTweetsFromUserVariable = db.prepare("SELECT * FROM tweets WHERE user_id = ?")
 
+const getTweetLikesVariable = db.prepare("SELECT COUNT(*) FROM likes WHERE tweet_id = ?")
+const getTweetRepostsVariable = db.prepare("SELECT COUNT(*) FROM reposts WHERE tweet_id = ?")
+const getTweetFromIdVariable = db.prepare("SELECT * FROM tweets WHERE id = ?")
+
 /*TO ADD:
  - get if user liked a post or not
  - get if user reposted a post or not
- - get amount of likes a post has
- - get amount of reposts a post has
 */
 
 //CRUD functions
@@ -75,6 +77,31 @@ export function getTweetsFromUser(user_id) {
     return { success: true, result }
   } catch (error) {
     console.error("Failed to get tweets from user:", error)
+
+    return { success: false, error: error.message }
+  }
+}
+
+export function getTweetLikesAndReposts(tweet_id) {
+  try {
+    const likes = getTweetLikesVariable.get(tweet_id)
+    const reposts = getTweetRepostsVariable.get(tweet_id)
+
+    return { success: true, likes: likes, reposts: reposts }
+  } catch (error) {
+    console.error("Failed to get tweet likes and reposts:", error)
+
+    return { success: false, error: error.message }
+  }
+}
+
+export function getTweetFromId(tweet_id) {
+  try {
+    const result = getTweetFromIdVariable.get(tweet_id)
+
+    return { success: true, result }
+  } catch (error) {
+    console.error("Failed to get tweet from id:", error)
 
     return { success: false, error: error.message }
   }

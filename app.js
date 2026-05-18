@@ -2,7 +2,7 @@ import express from "express"
 import path from "path"
 import { fileURLToPath } from 'node:url'
 import session from "express-session"
-import { getUserInfoByUsername, getUserInfo, insertUser, insertTweet, getTweetsFromUser } from "./js/db.js"
+import { getUserInfoByUsername, getUserInfo, insertUser, insertTweet, getTweetsFromUser, getTweetLikesAndReposts, getTweetFromId } from "./js/db.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -130,165 +130,48 @@ app.get("/profile", (req, res) => {
     });
 });
 
-/*
-app.post("/likes", (req, res) => {
-    const { post_id, username } = req.body;
+app.post("/tweet-info", (req, res) => {
+    const tweetid = req.body.tweetid
 
-    if (post_id == null || username == null) {
-        return res.status(400).json({ error: "Missing data" });
+    const tweet = getTweetFromId(tweetid);
+    if (tweet.success == false) {
+        console.log(info.error)
+        return res.json({
+            success: false,
+            error: tweet.error
+        })
     }
 
-    //THIS ADDS A LIKE, WE NEED A FUNCTION TO GET LIKES AND ACTUALLY KNOW IF THE USER LIKED IT
-    db.get(
-    `
-    SELECT
-      COUNT(*) AS count,
-      EXISTS(
-        SELECT 1 FROM post_likes WHERE post_id = ? AND username = ?
-      ) AS has_user
-    FROM post_likes
-    WHERE post_id = ?
-    `,
-    [post_id, username, post_id],
-    (err, row) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-
-      //console.log(row);
-
-      res.json({
-        count: row.count,
-        hasUser: !!row.has_user
-      });
+    const tweetLikesAndReposts = getTweetLikesAndReposts(tweetid);
+    if (tweetLikesAndReposts.success == false) {
+        console.log(tweetLikesAndReposts.error)
+        return res.json({
+            success: false,
+            error: tweetLikesAndReposts.error
+        })
     }
-  );
+
+    const author = getUserInfo(tweet.result.user_id)
+    if (author.success == false) {
+        console.log(author.error)
+        return res.json({
+            success: false,
+            error: author.error
+        })
+    }
+
+    res.json({
+        success: true,
+        tweet: {
+            authorid: tweet.result.user_id,
+            author: author.result.username,
+            authorpfp: author.result.pfp,
+            content: tweet.result.content,
+            likes: tweetLikesAndReposts.likes["COUNT(*)"],
+            reposts: tweetLikesAndReposts.reposts["COUNT(*)"]
+        }
+    })
 })
-
-app.post("/reposts", (req, res) => {
-    const { post_id, username } = req.body;
-
-    if (post_id == null || username == null) {
-        return res.status(400).json({ error: "Missing data" });
-    }
-
-    //THIS ADDS A LIKE, WE NEED A FUNCTION TO GET LIKES AND ACTUALLY KNOW IF THE USER LIKED IT
-    db.get(
-    `
-    SELECT
-      COUNT(*) AS count,
-      EXISTS(
-        SELECT 1 FROM post_reposts WHERE post_id = ? AND username = ?
-      ) AS has_user
-    FROM post_reposts
-    WHERE post_id = ?
-    `,
-    [post_id, username, post_id],
-    (err, row) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-
-      //console.log(row);
-
-      res.json({
-        count: row.count,
-        hasUser: !!row.has_user
-      });
-    }
-  );
-})
-
-app.post("/authorcontent", (req, res) => {
-    const { post_id } = req.body;
-
-    if (post_id == null) {
-        return res.status(400).json({ error: "Missing data" });
-    }
-    
-    db.get(
-    "SELECT user, content FROM tweets WHERE id = ?",
-    [post_id],
-    (err, row) => {
-      if (err) return res.status(500).json({ error: err.message });
-      if (!row) return res.status(404).json({ error: "Not found" });
-
-      res.json(row);
-    }
-  );
-})
-
-app.post("/togglelike", (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/enter');
-    }
-
-    const { post_id } = req.body;
-    const user = req.session.user.username;
-
-    db.serialize(() => {
-        db.run("BEGIN TRANSACTION");
-
-        // 1. Try removing the like
-        db.run(
-            `DELETE FROM post_likes
-             WHERE post_id = ? AND username = ?`,
-            [post_id, user],
-            function (err) {
-                if (err) {
-                    db.run("ROLLBACK");
-                    return res.status(500).json({ error: "db error" });
-                }
-
-                const removed = this.changes === 1;
-
-                const finish = (hasLiked) => {
-                    // 3. Get updated like count
-                    db.get(
-                        `SELECT COUNT(*) AS count
-                         FROM post_likes
-                         WHERE post_id = ?`,
-                        [post_id],
-                        (err2, row) => {
-                            if (err2) {
-                                db.run("ROLLBACK");
-                                return res.status(500).json({ error: "db error" });
-                            }
-
-                            db.run("COMMIT");
-
-                            res.json({
-                                has_liked: hasLiked,           // 1 or 0
-                                current_like_count: row.count  // total likes
-                            });
-                        }
-                    );
-                };
-
-                // 2. If removed → user unliked
-                if (removed) {
-                    finish(0);
-                } else {
-                    // otherwise insert new like
-                    db.run(
-                        `INSERT INTO post_likes (post_id, username)
-                         VALUES (?, ?)`,
-                        [post_id, user],
-                        function (err3) {
-                            if (err3) {
-                                db.run("ROLLBACK");
-                                return res.status(500).json({ error: "db error" });
-                            }
-
-                            finish(1);
-                        }
-                    );
-                }
-            }
-        );
-    });
-});
-*/
 
 app.get('/exit', (req, res) => {
     req.session.userid = null
