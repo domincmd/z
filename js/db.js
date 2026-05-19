@@ -19,6 +19,9 @@ const getTweetFromIdVariable = db.prepare("SELECT * FROM tweets WHERE id = ?")
 const getIfUserLikedTweetVariable = db.prepare("SELECT * FROM likes WHERE tweet_id = ? AND user_id = ?")
 const getIfUserRepostedTweetVariable = db.prepare("SELECT * FROM reposts WHERE tweet_id = ? AND user_id = ?")
 
+const addUserLikeVariable = db.prepare("INSERT INTO likes (tweet_id, user_id) VALUES (?, ?)")
+const removeUserLikeVariable = db.prepare("DELETE FROM likes WHERE tweet_id = ? AND user_id = ?")
+
 /*TO ADD:
  - get if user liked a post or not
  - get if user reposted a post or not
@@ -116,6 +119,29 @@ export function getIfUserLikedOrRepostedTweet(tweet_id, user_id) {
     const reposted = getIfUserRepostedTweetVariable.get(tweet_id, user_id)
 
     return { success: true, liked, reposted }
+  } catch (error) {
+    console.error("Failed to get tweet from id:", error)
+
+    return { success: false, error: error.message }
+  }
+}
+
+export function toggleLike(tweet_id, user_id) {
+  try {
+    const liked = getIfUserLikedTweetVariable.get(tweet_id, user_id)
+    if (liked) {
+      removeUserLikeVariable.run(tweet_id, user_id)
+    } else {
+      addUserLikeVariable.run(tweet_id, user_id)
+    }
+
+    const likes = getTweetLikesVariable.get(tweet_id)["COUNT(*)"]
+
+    return { 
+      success: true, 
+      liked: (liked) ? true : false, 
+      likes: likes 
+    }
   } catch (error) {
     console.error("Failed to get tweet from id:", error)
 

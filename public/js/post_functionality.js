@@ -1,144 +1,161 @@
 // THIS FILE STORES ALL FUNCTIONALITY RELATED TO POSTS
 // THIS INCLUDES LIKES, REPOSTS AND POST RENDERING
 
-const generalPostContainer = document.querySelector(".general-post-container")
+const generalPostContainer = document.querySelector(".general-post-container");
 
-    function getTweetInfo(tweetid, userid) { //in this case, user refers to the user viewing the post, to see if he has liked it or not
-        return fetch("/tweet-info", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                tweetid: tweetid,
-                userid: userid
-            })
-        }).then(res => res.json());
+function getTweetInfo(tweetid, userid) { //in this case, user refers to the user viewing the post, to see if he has liked it or not
+    return fetch("/tweet-info", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            tweetid: tweetid,
+            userid: userid
+        })
+    }).then(res => res.json());
+}
+
+function renderPost(tweetid = 1, userid = 1) {
+
+    if (isNaN(tweetid)) {
+        console.error("id is not a nubmer!");
+        return;
     }
 
-    function renderPost(tweetid=1, userid=1) {
+    //build element
 
-        if (isNaN(tweetid)) {console.error("id is not a nubmer!"); return}
+    const post = document.createElement("div");
+    const pfp = document.createElement("div");
+    const contentContainer = document.createElement("div");
+    const reactions = document.createElement("div");
 
-        //build element
+    const strong = document.createElement("strong");
+    const content = document.createElement("span");
 
-        const post = document.createElement("div")
-        const pfp = document.createElement("div")
-        const contentContainer = document.createElement("div")
-        const reactions = document.createElement("div")
+    const likeImg = document.createElement("img");
+    const likeSpan = document.createElement("span");
+    const repostImg = document.createElement("img");
+    const repostSpan = document.createElement("span");
 
-        const strong = document.createElement("strong")
-        const content = document.createElement("span")
+    likeImg.src = "/images/heart_empty.svg";
 
-        const likeImg = document.createElement("img")
-        const likeSpan = document.createElement("span")
-        const repostImg = document.createElement("img")
-        const repostSpan = document.createElement("span")
+    likeImg.addEventListener("mousedown", e => {
+        toggleLike(tweetid)
+    });
 
-        likeImg.src = "/images/heart_empty.svg"
-        likeImg.addEventListener("mousedown", e => {
-            //toggleLike(id)
-        })
-        likeImg.classList.add("like-img")
-        likeSpan.classList.add("like-span")
-        repostImg.src = "/images/repost_empty.svg"
+    likeImg.classList.add("like-img");
+    likeSpan.classList.add("like-span");
 
-        content.textContent = "TESTCONTENT123123"
-        strong.textContent = "TESTNAME"
-        strong.addEventListener("click", e => {
-            window.location.href = `/profile?u=${user}`
-        })
+    repostImg.src = "/images/repost_empty.svg";
 
-        post.classList.add("post")
-        post.classList.add(`post-${tweetid}`)
-        pfp.classList.add("pfp")
-        contentContainer.classList.add("content-container")
-        reactions.classList.add("reactions")
+    /*repostImg.addEventListener("mousedown", e => {
+        toggleRepost(tweetid)
+    });*/
 
-        pfp.textContent = "A"
+    content.textContent = "TESTCONTENT123123";
+    strong.textContent = "TESTNAME";
 
-        reactions.appendChild(likeImg)
-        reactions.appendChild(likeSpan)
-        reactions.appendChild(repostImg)
-        reactions.appendChild(repostSpan)
-        contentContainer.appendChild(strong)
-        contentContainer.appendChild(content)
-        contentContainer.appendChild(reactions)
-        post.appendChild(pfp)
-        post.appendChild(contentContainer)
+    strong.addEventListener("click", e => {
+        window.location.href = `/profile?u=${user}`;
+    });
 
-        //get and insert data
+    post.classList.add("post");
+    post.classList.add(`post-${tweetid}`);
 
-        getTweetInfo(tweetid, userid).then(results => {
-            console.log(results);
-            if (results.sucess == false) {
-                //do stuff here
+    pfp.classList.add("pfp");
 
-                return;
-            }
+    contentContainer.classList.add("content-container");
+    reactions.classList.add("reactions");
 
-            content.textContent = results.tweet.content
-            strong.textContent = results.tweet.author
-            pfp.textContent = results.tweet.authorpfp
+    pfp.textContent = "A";
 
-            likeSpan.textContent = results.tweet.likes
-            if (results.user_engagement.liked) {
-                likeImg.classList.add("full")
-                likeImg.src = "/images/heart_full.svg"
-            }else{ 
-                likeImg.classList.add("empty")
-                likeImg.src = "/images/heart_empty.svg"
-            }
+    reactions.appendChild(likeImg);
+    reactions.appendChild(likeSpan);
+    reactions.appendChild(repostImg);
+    reactions.appendChild(repostSpan);
 
-            repostSpan.textContent = results.tweet.reposts
-            if (results.user_engagement.reposted) {
-                repostImg.classList.add("full")
-                repostImg.src = "/images/repost_full.svg"
-            }else{ 
-                repostImg.classList.add("empty")
-                repostImg.src = "/images/repost_empty.svg"
-            }
-            
+    contentContainer.appendChild(strong);
+    contentContainer.appendChild(content);
+    contentContainer.appendChild(reactions);
 
-            generalPostContainer.appendChild(post)
-        });
+    post.appendChild(pfp);
+    post.appendChild(contentContainer);
 
-        
-    }
+    //get and insert data
 
-    function toggleLike(id) {
-        if (isNaN(id)) {
-            console.error("id is not a number!");
+    getTweetInfo(tweetid, userid).then(results => {
+        console.log(results);
+
+        if (results.sucess == false) {
+            //do stuff here
             return;
         }
 
-        fetch("/togglelike", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ post_id: id })
-        })
-        .then(res => res.json())   // parse JSON
-        .then(data => {
-            console.log(data);
-            
-            const matching_posts = document.querySelectorAll(`.post-${(id)}`)
+        content.textContent = results.tweet.content;
+        strong.textContent = results.tweet.author;
+        pfp.textContent = results.tweet.authorpfp;
 
-            matching_posts.forEach(post => {
-                const likeImg = post.querySelector(".like-img")
-                const likeSpan = post.querySelector(".like-span")
+        likeSpan.textContent = results.tweet.likes;
 
-                if (data.has_liked == 1) {
-                    likeImg.classList.replace("empty", "full")
-                    likeImg.src = "/images/heart_full.svg"
-                }else{ 
-                    likeImg.classList.replace("full", "empty")
-                    likeImg.src = "/images/heart_empty.svg"
-                }
+        if (results.user_engagement.liked) {
+            likeImg.classList.add("full");
+            likeImg.src = "/images/heart_full.svg";
+        } else {
+            likeImg.classList.add("empty");
+            likeImg.src = "/images/heart_empty.svg";
+        }
 
-                likeSpan.textContent = data.current_like_count
-            })
-        })
-        .catch(err => console.error(err));
+        repostSpan.textContent = results.tweet.reposts;
+
+        if (results.user_engagement.reposted) {
+            repostImg.classList.add("full");
+            repostImg.src = "/images/repost_full.svg";
+        } else {
+            repostImg.classList.add("empty");
+            repostImg.src = "/images/repost_empty.svg";
+        }
+
+        generalPostContainer.appendChild(post);
+    });
+}
+
+function toggleLike(tweetid) {
+
+    if (isNaN(tweetid)) {
+        console.error("id is not a number!");
+        return;
     }
+
+    fetch("/toggle-like", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ tweetid: tweetid })
+    })
+
+    .then(res => res.json()) // parse JSON
+
+    .then(data => {
+        const matching_posts = document.querySelectorAll(`.post-${(tweetid)}`);
+
+        matching_posts.forEach(post => {
+
+            const likeImg = post.querySelector(".like-img");
+            const likeSpan = post.querySelector(".like-span");
+
+            if (data.liked == 0) {
+                likeImg.classList.replace("empty", "full");
+                likeImg.src = "/images/heart_full.svg";
+            } else {
+                likeImg.classList.replace("full", "empty");
+                likeImg.src = "/images/heart_empty.svg";
+            }
+
+            likeSpan.textContent = data.likes;
+        });
+    })
+
+    .catch(err => console.error(err));
+}
