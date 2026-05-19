@@ -49,9 +49,12 @@ function renderPost(tweetid = 1, userid = 1) {
 
     repostImg.src = "/images/repost_empty.svg";
 
-    /*repostImg.addEventListener("mousedown", e => {
+    repostImg.addEventListener("mousedown", e => {
         toggleRepost(tweetid)
-    });*/
+    });
+
+    repostImg.classList.add("repost-img");
+    repostSpan.classList.add("repost-span");
 
     content.textContent = "TESTCONTENT123123";
     strong.textContent = "TESTNAME";
@@ -154,6 +157,46 @@ function toggleLike(tweetid) {
             }
 
             likeSpan.textContent = data.likes;
+        });
+    })
+
+    .catch(err => console.error(err));
+}
+
+function toggleRepost(tweetid) {
+
+    if (isNaN(tweetid)) {
+        console.error("id is not a number!");
+        return;
+    }
+
+    fetch("/toggle-repost", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ tweetid: tweetid })
+    })
+
+    .then(res => res.json()) // parse JSON
+
+    .then(data => {
+        const matching_posts = document.querySelectorAll(`.post-${(tweetid)}`);
+
+        matching_posts.forEach(post => {
+
+            const repostImg = post.querySelector(".repost-img");
+            const repostSpan = post.querySelector(".repost-span");
+
+            if (data.reposted == 0) {
+                repostImg.classList.replace("empty", "full");
+                repostImg.src = "/images/repost_full.svg";
+            } else {
+                repostImg.classList.replace("full", "empty");
+                repostImg.src = "/images/repost_empty.svg";
+            }
+
+            repostSpan.textContent = data.reposts;
         });
     })
 

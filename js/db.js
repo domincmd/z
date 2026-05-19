@@ -22,6 +22,10 @@ const getIfUserRepostedTweetVariable = db.prepare("SELECT * FROM reposts WHERE t
 const addUserLikeVariable = db.prepare("INSERT INTO likes (tweet_id, user_id) VALUES (?, ?)")
 const removeUserLikeVariable = db.prepare("DELETE FROM likes WHERE tweet_id = ? AND user_id = ?")
 
+const addUserRepostVariable = db.prepare("INSERT INTO reposts (tweet_id, user_id) VALUES (?, ?)")
+const removeUserRepostVariable = db.prepare("DELETE FROM reposts WHERE tweet_id = ? AND user_id = ?")
+
+
 /*TO ADD:
  - get if user liked a post or not
  - get if user reposted a post or not
@@ -128,7 +132,7 @@ export function getIfUserLikedOrRepostedTweet(tweet_id, user_id) {
 
 export function toggleLike(tweet_id, user_id) {
   try {
-    const liked = getIfUserLikedTweetVariable.get(tweet_id, user_id)
+    const liked = !!getIfUserLikedTweetVariable.get(tweet_id, user_id)
     if (liked) {
       removeUserLikeVariable.run(tweet_id, user_id)
     } else {
@@ -139,8 +143,32 @@ export function toggleLike(tweet_id, user_id) {
 
     return { 
       success: true, 
-      liked: (liked) ? true : false, 
+      liked: liked, 
       likes: likes 
+    }
+  } catch (error) {
+    console.error("Failed to get tweet from id:", error)
+
+    return { success: false, error: error.message }
+  }
+}
+
+export function toggleRepost(tweet_id, user_id) {
+  try {
+    const reposted = !!getIfUserRepostedTweetVariable.get(tweet_id, user_id)
+
+    if (reposted) {
+      removeUserRepostVariable.run(tweet_id, user_id)
+    } else {
+      addUserRepostVariable.run(tweet_id, user_id)
+    }
+
+    const reposts = getTweetRepostsVariable.get(tweet_id)["COUNT(*)"]
+
+    return { 
+      success: true, 
+      reposted: reposted, 
+      reposts: reposts
     }
   } catch (error) {
     console.error("Failed to get tweet from id:", error)

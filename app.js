@@ -2,7 +2,7 @@ import express from "express"
 import path from "path"
 import { fileURLToPath } from 'node:url'
 import session from "express-session"
-import { getUserInfoByUsername, getUserInfo, insertUser, insertTweet, getTweetsFromUser, getTweetLikesAndReposts, getTweetFromId, getIfUserLikedOrRepostedTweet, toggleLike } from "./js/db.js"
+import { getUserInfoByUsername, getUserInfo, insertUser, insertTweet, getTweetsFromUser, getTweetLikesAndReposts, getTweetFromId, getIfUserLikedOrRepostedTweet, toggleLike, toggleRepost } from "./js/db.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -203,6 +203,26 @@ app.post("/toggle-like", (req, res) => {
         success: result.success,
         liked: result.liked,
         likes: result.likes
+    })
+})
+
+app.post("/toggle-repost", (req, res) => {
+    const userid = req.session.userid
+    const tweetid = req.body.tweetid
+
+    if (!userid) {
+        return res.json({
+            success: false,
+            error: "no session!"
+        });
+    }
+
+    const result = toggleRepost(tweetid, userid)
+
+    res.json({
+        success: result.success,
+        reposted: result.reposted,
+        reposts: result.reposts
     })
 })
 
