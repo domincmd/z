@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= user %>'s profile</title>
+    <title><%= viewing %>'s profile</title>
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/home.css">
     <link rel="stylesheet" href="/css/profile.css">
@@ -16,14 +16,14 @@
                 <div class="pfp">
                     <%= pfp %>
                 </div>
-                <span><%= user %></span>
+                <span><%= username %></span>
                 <img src="/images/exit.svg" alt="" onclick="window.location.href='/exit'">
             </div>
             <div class="sections-list">
                 <div class="section" onclick="window.location.href='/'">
                     <span>home</span>
                 </div>
-                <div class="section" onclick="window.location.href=('/profile?u= <%=user%>'.replace(' ', ''))"> <!-- remove space required for ejs to format -->
+                <div class="section" onclick="window.location.href=('/profile?u= <%=username%>'.replace(' ', ''))"> <!-- remove space required for ejs to format -->
                     <span>profile</span>
                 </div>
                 <div class="section" onclick="window.location.href='/credits'">
@@ -34,9 +34,9 @@
         <div class="middle-container">
             <div class="big-profile-container">
                 <div class="big-pfp">
-                    <%= user_viewed_pfp %>
+                    <%= viewing_pfp %>
                 </div>
-                <span class="big-username"><%= user_viewed %></span>
+                <span class="big-username"><%= viewing %></span>
             </div>
             <div class="small-container">
                 <span>tweets</span>
@@ -63,7 +63,9 @@
 <script src="/js/post_functionality.js"></script>
 <script>
     <% tweets.forEach(tweet => { %>
-        renderPost(<%= tweet.id %>)
+        console.log("<%= tweet.id %>")
+        console.log("<%= tweet.user_id %>")
+        console.log("<%= tweet.content %>")
     <% }) %>
 </script>
 </html>

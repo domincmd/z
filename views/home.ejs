@@ -15,14 +15,14 @@
                 <div class="pfp">
                     <%= pfp %>
                 </div>
-                <span><%= user %></span>
+                <span><%= username %></span>
                 <img src="/images/exit.svg" alt="" onclick="window.location.href='/exit'">
             </div>
             <div class="sections-list">
                 <div class="section" onclick="window.location.href='/'">
                     <span>home</span>
                 </div>
-                <div class="section" onclick="window.location.href=('/profile?u= <%= user %>'.replace(' ', ''))">
+                <div class="section" onclick="window.location.href=('/profile?u= <%= username %>'.replace(' ', ''))">
                     <span>profile</span>
                 </div>
                 <div class="section" onclick="window.location.href='/credits'">
@@ -65,9 +65,9 @@
 <script src="/js/post_functionality.js"></script>
 <script>
 
-    for (let i = 1; i <= <%= posts %>; i++) { //posts represents the number of posts in ejs
+    /*for (let i = 1; i <= posts; i++) { //posts represents the number of posts in ejs
         renderPost(i)
-    }
+    }*/
     
 </script>
 </html>

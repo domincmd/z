@@ -1,7 +1,12 @@
-const express = require('express')
-const path = require('path');
-const sqlite3 = require('sqlite3').verbose()
-const session = require('express-session');
+import express from "express"
+import path from "path"
+import { fileURLToPath } from 'node:url'
+import session from "express-session"
+import { getUserInfoByUsername, getUserInfo, insertUser, insertTweet, getTweetsFromUser, getTweetLikesAndReposts, getTweetFromId, getIfUserLikedOrRepostedTweet, toggleLike } from "./js/db.js"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 const app = express()
 const port = 3000
 
@@ -20,48 +25,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-let sql;
-
-//connect to database
-const db = new sqlite3.Database('./x.db', sqlite3.OPEN_READWRITE, (err) => {
-    if (err) return console.error(err.message) //if there is an error, log it as such
-})
-
-//create users table
-/*sql = `CREATE TABLE users (
-    id INTEGER PRIMARY KEY,
-    username TEXT,
-    password TEXT
-);`
-
-db.run(sql)*/
-
-/*sql = `CREATE TABLE tweets (
-    id INTEGER PRIMARY KEY,
-    user TEXT,
-    content TEXT,
-);`
-
-db.run(sql)*/
-
 app.get('/', (req, res) => {
-    if (!req.session.user) {
+    if (!req.session.userid) {
         return res.redirect('/enter');
     }
 
-    db.get(
-      `SELECT COUNT(*) AS total FROM tweets;`,
-      [],
-      (err, rows) => {
-        if (err) console.error(err);
+    const info = getUserInfo(req.session.userid);
 
-        res.render('home', {
-            user: req.session.user.username,
-            posts: rows.total,
-            pfp: ":)"
-        });
-      }
-    );
+    res.render('home', {
+        username: info.result.username,
+        pfp: info.result.pfp
+    });
 
     
 });
@@ -85,270 +59,155 @@ app.post("/signup", (req, res) => {
         });
     }
 
-    db.all('SELECT * FROM users', [], (err, rows) => {
-        if (err) {console.error(err); return res.render('enter.ejs', {signup_message: "db error", login_message: null});}
-
-        // check if user already is taken
-        for (const row of rows) {
-            if (row.username === data.username) {
-                return res.render('enter.ejs', {signup_message: "username already in use", login_message: null})
-            }
-        }
-
-        // insert user into db
-        db.run("INSERT INTO users(username, password) VALUES (?, ?)", [data.username, data.password], (err) => {
-                if (err) {
-                    console.error(err);
-                    return res.render('enter.ejs', {signup_message: "insert error", login_message: null})
-                }
-
-                return res.render('enter.ejs', {signup_message: "successfully signed up, you may now log in", login_message: null})
-            }
-        );
-    });
+    // insert user into db
+    const insert = insertUser(data.username, ":)", data.password)
+    if (insert.success == true) {return res.render('enter.ejs', {signup_message: "successfully signed up, you may now log in", login_message: null})}
+    else {return res.send(insert.error)}
 });
 
 app.post("/login", (req, res) => {
     const data = req.body
 
-    db.all('SELECT * FROM users', [], (err, rows) => {
-        if (err) {console.error(err); return res.render('enter.ejs', {signup_message: "db error", login_message: null});}
-
-        for (const row of rows) {
-            if (row.username === data.username) {
-                if (row.password != data.password) return res.render('enter.ejs', {signup_message: null, login_message: "password is incorrect"})
-                
-                //successfully logged in code
-                req.session.user = {
-                    username: data.username
-                };
-                return res.redirect('/');
-            }
-        }
-
-        return res.render('enter.ejs', {signup_message: null, login_message: "username not found"})
-    });
+    const info = getUserInfoByUsername(data.username)
+    if (info.success == false) {
+        return res.send(info.error)
+    }
+    if (info.result.password !== data.password) {
+        return res.send("passwords do not match")
+    }
+    req.session.userid = info.result.id
+    return res.redirect('/');
 })
 
 app.post("/post", (req, res) => {
     const tweet = req.body.tweet;
+    if (!req.session.userid) {
+        return res.redirect('/enter');
+    }
 
     if (tweet == "") {
         return res.send("cant tweet nothing")
     }
 
-    if (!req.session.user) {
+    const insert = insertTweet(req.session.userid, tweet)
+    if (insert.success == false) {
+        console.log(insert.error)
+        return res.send(insert.error)
+    }
+    return res.redirect('/');
+})
+
+app.get("/profile", (req, res) => {
+    const viewing = req.query.u;
+
+    if (!req.session.userid) {
         return res.redirect('/enter');
     }
 
-    db.run("INSERT INTO tweets(user, content) VALUES (?, ?)", [req.session.user.username, tweet], (err) => {
-        if (err) {console.log(err); return res.send("error: " + err)}
-        
-        return res.redirect("/")
-    })
-
-})
-
-app.post("/likes", (req, res) => {
-    const { post_id, username } = req.body;
-
-    if (post_id == null || username == null) {
-        return res.status(400).json({ error: "Missing data" });
+    const info = getUserInfo(req.session.userid);
+    if (info.success == false) {
+        console.log(info.error)
+        return res.send(info.error)
+    }
+    const viewingInfo = getUserInfoByUsername(viewing);
+    if (viewingInfo.success == false) {
+        console.log(viewingInfo.error)
+        return res.send(viewingInfo.error)
     }
 
-    //THIS ADDS A LIKE, WE NEED A FUNCTION TO GET LIKES AND ACTUALLY KNOW IF THE USER LIKED IT
-    db.get(
-    `
-    SELECT
-      COUNT(*) AS count,
-      EXISTS(
-        SELECT 1 FROM post_likes WHERE post_id = ? AND username = ?
-      ) AS has_user
-    FROM post_likes
-    WHERE post_id = ?
-    `,
-    [post_id, username, post_id],
-    (err, row) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-
-      //console.log(row);
-
-      res.json({
-        count: row.count,
-        hasUser: !!row.has_user
-      });
-    }
-  );
-})
-
-app.post("/reposts", (req, res) => {
-    const { post_id, username } = req.body;
-
-    if (post_id == null || username == null) {
-        return res.status(400).json({ error: "Missing data" });
+    const tweetsFromViewing = getTweetsFromUser(viewingInfo.result.id)
+    if (tweetsFromViewing.success == false) {
+        console.log(tweetsFromViewing.error)
+        return res.send(tweetsFromViewing.error)
     }
 
-    //THIS ADDS A LIKE, WE NEED A FUNCTION TO GET LIKES AND ACTUALLY KNOW IF THE USER LIKED IT
-    db.get(
-    `
-    SELECT
-      COUNT(*) AS count,
-      EXISTS(
-        SELECT 1 FROM post_reposts WHERE post_id = ? AND username = ?
-      ) AS has_user
-    FROM post_reposts
-    WHERE post_id = ?
-    `,
-    [post_id, username, post_id],
-    (err, row) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-
-      //console.log(row);
-
-      res.json({
-        count: row.count,
-        hasUser: !!row.has_user
-      });
-    }
-  );
-})
-
-app.post("/authorcontent", (req, res) => {
-    const { post_id } = req.body;
-
-    if (post_id == null) {
-        return res.status(400).json({ error: "Missing data" });
-    }
-    
-    db.get(
-    "SELECT user, content FROM tweets WHERE id = ?",
-    [post_id],
-    (err, row) => {
-      if (err) return res.status(500).json({ error: err.message });
-      if (!row) return res.status(404).json({ error: "Not found" });
-
-      res.json(row);
-    }
-  );
-})
-
-app.post("/togglelike", (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/enter');
-    }
-
-    const { post_id } = req.body;
-    const user = req.session.user.username;
-
-    db.serialize(() => {
-        db.run("BEGIN TRANSACTION");
-
-        // 1. Try removing the like
-        db.run(
-            `DELETE FROM post_likes
-             WHERE post_id = ? AND username = ?`,
-            [post_id, user],
-            function (err) {
-                if (err) {
-                    db.run("ROLLBACK");
-                    return res.status(500).json({ error: "db error" });
-                }
-
-                const removed = this.changes === 1;
-
-                const finish = (hasLiked) => {
-                    // 3. Get updated like count
-                    db.get(
-                        `SELECT COUNT(*) AS count
-                         FROM post_likes
-                         WHERE post_id = ?`,
-                        [post_id],
-                        (err2, row) => {
-                            if (err2) {
-                                db.run("ROLLBACK");
-                                return res.status(500).json({ error: "db error" });
-                            }
-
-                            db.run("COMMIT");
-
-                            res.json({
-                                has_liked: hasLiked,           // 1 or 0
-                                current_like_count: row.count  // total likes
-                            });
-                        }
-                    );
-                };
-
-                // 2. If removed → user unliked
-                if (removed) {
-                    finish(0);
-                } else {
-                    // otherwise insert new like
-                    db.run(
-                        `INSERT INTO post_likes (post_id, username)
-                         VALUES (?, ?)`,
-                        [post_id, user],
-                        function (err3) {
-                            if (err3) {
-                                db.run("ROLLBACK");
-                                return res.status(500).json({ error: "db error" });
-                            }
-
-                            finish(1);
-                        }
-                    );
-                }
-            }
-        );
+    res.render('profile', {
+        username: info.result.username, //actual user
+        pfp: info.result.pfp, //actual user's pfp
+        viewing: viewing, //user that is being viewed
+        viewing_pfp: viewingInfo.result.pfp, //user being viewed pfp
+        tweets: tweetsFromViewing.result,
     });
 });
 
-app.get("/profile", (req, res) => {
-    const username = req.query.u;
+app.post("/tweet-info", (req, res) => {
+    const tweetid = req.body.tweetid
+    const userid = req.body.userid
+    let liked = null
+    let reposted = null
 
-    if (!req.session.user) {
-        return res.redirect('/enter');
+    const tweet = getTweetFromId(tweetid);
+    if (tweet.success == false) {
+        console.log(info.error)
+        return res.json({
+            success: false,
+            error: tweet.error
+        })
     }
 
-    db.get(
-        "SELECT COUNT(*) AS count FROM users WHERE username = ?;",
-        [username],
-        (err, row) => {
-            if (err) {
-                console.error(err);
-                return res.send("error: " + err);
-            }
+    const tweetLikesAndReposts = getTweetLikesAndReposts(tweetid);
+    if (tweetLikesAndReposts.success == false) {
+        console.log(tweetLikesAndReposts.error)
+        return res.json({
+            success: false,
+            error: tweetLikesAndReposts.error
+        })
+    }
 
-            db.all("SELECT * FROM tweets WHERE user = ?;", [username], (err, result) => {
-                if (err) {
-                    console.error(err);
-                    return res.send("error: " + err);
-                }
+    const author = getUserInfo(tweet.result.user_id)
+    if (author.success == false) {
+        console.log(author.error)
+        return res.json({
+            success: false,
+            error: author.error
+        })
+    }
 
-                //console.log(result)
+    if (userid) {
+        const userEngagement = getIfUserLikedOrRepostedTweet(tweetid, userid)
+        liked = (userEngagement.liked) ? true : false
+        reposted = (userEngagement.reposted) ? true : false
+    }
 
-                res.render('profile', {
-                    user: req.session.user.username, //actual user
-                    pfp: ":)", //actual user's pfp
-                    user_viewed: username, //user that is being viewed
-                    user_viewed_pfp: ":0", //user being viewed pfp
-                    tweets: result,
-                    
-                });
-            })
-
-            
-            
+    res.json({
+        success: true,
+        tweet: {
+            authorid: tweet.result.user_id,
+            author: author.result.username,
+            authorpfp: author.result.pfp,
+            content: tweet.result.content,
+            likes: tweetLikesAndReposts.likes["COUNT(*)"],
+            reposts: tweetLikesAndReposts.reposts["COUNT(*)"]
+        },
+        user_engagement: {
+            liked: liked,
+            reposted: reposted,
         }
-    );
-});
+    })
+})
+
+app.post("/toggle-like", (req, res) => {
+    const userid = req.session.userid
+    const tweetid = req.body.tweetid
+
+    if (!userid) {
+        return res.json({
+            success: false,
+            error: "no session!"
+        });
+    }
+
+    const result = toggleLike(tweetid, userid)
+
+    res.json({
+        success: result.success,
+        liked: result.liked,
+        likes: result.likes
+    })
+})
 
 app.get('/exit', (req, res) => {
-    req.session.user = null
+    req.session.userid = null
     res.redirect('/')
 })
 

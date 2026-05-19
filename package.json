@@ -9,12 +9,11 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
-    "better-sqlite3": "^12.6.2",
+    "better-sqlite3": "^12.10.0",
     "ejs": "^4.0.1",
     "express": "^5.2.1",
-    "express-session": "^1.19.0",
-    "sqlite3": "^5.1.7"
+    "express-session": "^1.19.0"
   }
 }
