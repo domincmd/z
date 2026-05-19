@@ -3,47 +3,22 @@
 
 const generalPostContainer = document.querySelector(".general-post-container")
 
-    function getLikes(id, user) { //in this case, user refers to the user viewing the post, to see if he has liked it or not
-        return fetch("/likes", {
+    function getTweetInfo(tweetid, userid) { //in this case, user refers to the user viewing the post, to see if he has liked it or not
+        return fetch("/tweet-info", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                post_id: id,
-                username: user
+                tweetid: tweetid,
+                userid: userid
             })
         }).then(res => res.json());
     }
 
-    function getReposts(id, user) { //in this case, user refers to the user viewing the post, to see if he has reposted it or not
-        return fetch("/reposts", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                post_id: id,
-                username: user
-            })
-        }).then(res => res.json());
-    }
+    function renderPost(tweetid=1, userid=1) {
 
-    function getAuthorAndContent(id) {
-        return fetch("/authorcontent", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                post_id: id
-            })
-        }).then(res => res.json());
-    }
-
-    function renderPost(id=1, user="domin") { //id of the post
-
-        if (isNaN(id)) {console.error("id is not a nubmer!"); return}
+        if (isNaN(tweetid)) {console.error("id is not a nubmer!"); return}
 
         //build element
 
@@ -62,7 +37,7 @@ const generalPostContainer = document.querySelector(".general-post-container")
 
         likeImg.src = "/images/heart_empty.svg"
         likeImg.addEventListener("mousedown", e => {
-            toggleLike(id)
+            //toggleLike(id)
         })
         likeImg.classList.add("like-img")
         likeSpan.classList.add("like-span")
@@ -75,12 +50,12 @@ const generalPostContainer = document.querySelector(".general-post-container")
         })
 
         post.classList.add("post")
-        post.classList.add(`post-${id}`)
+        post.classList.add(`post-${tweetid}`)
         pfp.classList.add("pfp")
         contentContainer.classList.add("content-container")
         reactions.classList.add("reactions")
 
-        pfp.textContent = ":)"
+        pfp.textContent = "A"
 
         reactions.appendChild(likeImg)
         reactions.appendChild(likeSpan)
@@ -94,21 +69,20 @@ const generalPostContainer = document.querySelector(".general-post-container")
 
         //get and insert data
 
-        const requests = [
-            getLikes(id, user),
-            getReposts(id, user),
-            getAuthorAndContent(id)
-        ];
-        
-        Promise.all(requests)
-        .then(results => {
+        getTweetInfo(tweetid, userid).then(results => {
             console.log(results);
+            if (results.sucess == false) {
+                //do stuff here
 
-            content.textContent = results[2].content
-            strong.textContent = results[2].user
+                return;
+            }
 
-            likeSpan.textContent = results[0].count
-            if (results[0].hasUser) {
+            content.textContent = results.tweet.content
+            strong.textContent = results.tweet.author
+            pfp.textContent = results.tweet.authorpfp
+
+            likeSpan.textContent = results.tweet.likes
+            if (results.user_engagement.liked) {
                 likeImg.classList.add("full")
                 likeImg.src = "/images/heart_full.svg"
             }else{ 
@@ -116,8 +90,8 @@ const generalPostContainer = document.querySelector(".general-post-container")
                 likeImg.src = "/images/heart_empty.svg"
             }
 
-            repostSpan.textContent = results[1].count
-            if (results[1].hasUser) {
+            repostSpan.textContent = results.tweet.reposts
+            if (results.user_engagement.reposted) {
                 repostImg.classList.add("full")
                 repostImg.src = "/images/repost_full.svg"
             }else{ 
