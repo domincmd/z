@@ -2,7 +2,7 @@ import express from "express"
 import path from "path"
 import { fileURLToPath } from 'node:url'
 import session from "express-session"
-import { getUserInfoByUsername, getUserInfo, insertUser, insertTweet, getTweetsFromUser, getTweetLikesAndReposts, getTweetFromId } from "./js/db.js"
+import { getUserInfoByUsername, getUserInfo, insertUser, insertTweet, getTweetsFromUser, getTweetLikesAndReposts, getTweetFromId, getIfUserLikedOrRepostedTweet } from "./js/db.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -132,6 +132,9 @@ app.get("/profile", (req, res) => {
 
 app.post("/tweet-info", (req, res) => {
     const tweetid = req.body.tweetid
+    const userid = req.body.userid
+    let liked = null
+    let reposted = null
 
     const tweet = getTweetFromId(tweetid);
     if (tweet.success == false) {
@@ -160,6 +163,12 @@ app.post("/tweet-info", (req, res) => {
         })
     }
 
+    if (userid) {
+        const userEngagement = getIfUserLikedOrRepostedTweet(tweetid, userid)
+        liked = (userEngagement.liked) ? true : false
+        reposted = (userEngagement.reposted) ? true : false
+    }
+
     res.json({
         success: true,
         tweet: {
@@ -169,6 +178,10 @@ app.post("/tweet-info", (req, res) => {
             content: tweet.result.content,
             likes: tweetLikesAndReposts.likes["COUNT(*)"],
             reposts: tweetLikesAndReposts.reposts["COUNT(*)"]
+        },
+        user_engagement: {
+            liked: liked,
+            reposted: reposted,
         }
     })
 })
