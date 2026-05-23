@@ -59,10 +59,6 @@ function renderPost(tweetid = 1, userid = 1) {
     content.textContent = "TESTCONTENT123123";
     strong.textContent = "TESTNAME";
 
-    strong.addEventListener("click", e => {
-        window.location.href = `/profile?u=${user}`;
-    });
-
     post.classList.add("post");
     post.classList.add(`post-${tweetid}`);
 
@@ -100,6 +96,10 @@ function renderPost(tweetid = 1, userid = 1) {
         pfp.textContent = results.tweet.authorpfp;
 
         likeSpan.textContent = results.tweet.likes;
+
+        strong.addEventListener("click", e => {
+            window.location.href = `/profile?u=${results.tweet.author}`;
+        });
 
         if (results.user_engagement.liked) {
             likeImg.classList.add("full");

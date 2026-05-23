@@ -62,10 +62,8 @@
 </body>
 <script src="/js/post_functionality.js"></script>
 <script>
-    <% tweets.forEach(tweet => { %>
-        console.log("<%= tweet.id %>")
-        console.log("<%= tweet.user_id %>")
-        console.log("<%= tweet.content %>")
+    <% [...tweets].reverse().forEach(tweet => { %>
+        renderPost(<%= tweet.id %>, <%= tweet.user_id %>)
     <% }) %>
 </script>
 </html>
